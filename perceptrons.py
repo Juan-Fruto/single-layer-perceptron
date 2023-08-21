@@ -42,7 +42,7 @@ class SingleLayerPerceptron(Perceptron):
     if(entry >= 0):
       return 1
     else:
-      return -1
+      return 0
 
   def train(self):
     ALPHA = 0.5 # learning rate
@@ -59,7 +59,7 @@ class SingleLayerPerceptron(Perceptron):
         self.model[weight_key] = 0
 
         if(axions == self._train_dataset[0]):
-          self.model[weight_key] = random.uniform(1, 5)
+          self.model[weight_key] = random.uniform(1, 2)
         else:
           self.model[weight_key] += (ALPHA * error * value) # W(k+1)= Wk + αEXk
         
@@ -79,6 +79,7 @@ class SingleLayerPerceptron(Perceptron):
 
   def predict(self, inputs = []):
     output = []
+    expected_output = []
     
     if(len(inputs) == 0):
       # inputs = self._test_dataset
@@ -88,10 +89,11 @@ class SingleLayerPerceptron(Perceptron):
         for index, value in enumerate(v.values()): # index: 1, value: 3.5
           input.append(value)
         
+        expected_output.append(input[-1])
         del input[-1]
         inputs.append(input)
       
-      print("Inputs:", inputs)
+    print("Inputs:", inputs)
 
     for i in inputs:
       sumation = 0
@@ -101,4 +103,11 @@ class SingleLayerPerceptron(Perceptron):
       label = self.__sign_function(sumation)
       output.append(label)
 
-    return output
+    same = 0
+    for i in range(len(output)):
+      if(output[i] == expected_output[i]):
+        same += 1
+
+    cci = (same * 100 )/len(output)
+
+    return {'output': output, "expected_output": expected_output,'correctly clasified instances': str(cci)+'%'}

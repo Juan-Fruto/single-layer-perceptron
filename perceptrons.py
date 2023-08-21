@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABCMeta
+from tabulate import tabulate
 import random
 
 class Perceptron(metaclass = ABCMeta):
@@ -7,7 +8,7 @@ class Perceptron(metaclass = ABCMeta):
     # protected attributes
     self._train_dataset = []
     self._test_dataset = []
-    self.model = [{}]
+    self.model = {}
     self._input = []
 
   def set_dataset(self, dataset, train_percent):
@@ -19,16 +20,13 @@ class Perceptron(metaclass = ABCMeta):
         self._test_dataset.append(item)
 
     return self
-  
-  def set_input(self, input):
-    self.input = input
 
   @abstractmethod
   def train(self):
     pass
-  
-  @abstractmethod
-  def get_output(self):
+
+  @abstractmethod  
+  def predict(self, input):
     pass
 
 class SingleLayerPerceptron(Perceptron):
@@ -47,49 +45,60 @@ class SingleLayerPerceptron(Perceptron):
       return -1
 
   def train(self):
-    alpha = 0.5 # learning rate
+    ALPHA = 0.5 # learning rate
     error = 1
+    verbose = []
     
     for axions in self._train_dataset: # axions = {'x1': 1,'x2': 10,'output': -1}
       sumation = 0
       _, train_output = axions.popitem() # axions = {'x1': 1,'x2': 10}
 
-      for key, value in axions.items(): # key = x1, value = 1
+      for index, (key, value) in enumerate(axions.items()): # key = x1, value = 1
         
-        weight = 0
+        weight_key = 'w' + str(index + 1)
+        self.model[weight_key] = 0
+
         if(axions == self._train_dataset[0]):
-          weight = random.uniform(1, 5)
+          self.model[weight_key] = random.uniform(1, 5)
         else:
-          weight = weight + (alpha * error * value) # W(k+1)= Wk + αEXk
+          self.model[weight_key] += (ALPHA * error * value) # W(k+1)= Wk + αEXk
         
-        sumation += value * weight
+        sumation += value * self.model[weight_key]
       
       output = self.__sign_function(sumation)
-      print(output, sumation)
-
+      
       error = train_output - output
 
+      verbose.append([output, train_output, error])
+
       if(error == 0):
-        print("error=", error)
-        """
-        --> save the weights in the model <--
-        """
-        self.model = {"model": 3}
+        headers = ["output","expected output", "error"]
+        print(tabulate(verbose, headers, tablefmt="psql", showindex=True))
+        print("training process finished")
         break
 
-
-  def set_input(self, input):
-    # super().set_input(input)
-
-    # for i in (self.input):
-    #   self.axons.append({'x': i})
-
-    # self.__random_weights()
+  def predict(self, inputs = []):
+    output = []
     
-    return self
+    if(len(inputs) == 0):
+      # inputs = self._test_dataset
+      for i, v in enumerate(self._test_dataset): # i: 1, v: {'x1': 3.5,'x2': 9,'output': -1}
+        input = []
+        
+        for index, value in enumerate(v.values()): # index: 1, value: 3.5
+          input.append(value)
+        
+        del input[-1]
+        inputs.append(input)
+      
+      print("Inputs:", inputs)
 
-  def get_axon(self):
-    return self.axon
-  
-  def get_output(self):
-    pass
+    for i in inputs:
+      sumation = 0
+      for index, value in enumerate(self.model.values()):
+        sumation += value * i[index]
+
+      label = self.__sign_function(sumation)
+      output.append(label)
+
+    return output

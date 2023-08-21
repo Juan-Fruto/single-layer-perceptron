@@ -1,11 +1,12 @@
 from perceptrons import SingleLayerPerceptron 
+import csv
 
 ALFA = 0.5
 
 def main():
-  pml = SingleLayerPerceptron()
+  slp = SingleLayerPerceptron()
 
-  pml\
+  slp\
     .set_dataset([
       {'x1': 1,'x2': 10,'output': -1},
       {'x1': 5,'x2': 2,'output': 1},
@@ -15,10 +16,13 @@ def main():
     ], .8)\
     .train()
   
-  # print("axos\n", pml.get_axons())
-  print("train\n", pml._train_dataset)
-  print("test\n", pml._test_dataset)
-  print(pml.model)
+  print("--> Debugin test <--")
+  print("Train dataset:", slp._train_dataset)
+  print("Test dataset:", slp._test_dataset)
+  print("--> <--")
+
+  print("Model: ", slp.model)
+  print("Predictions", slp.predict())
 
 if __name__ == "__main__":
   main()
